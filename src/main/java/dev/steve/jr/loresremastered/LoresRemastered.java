@@ -20,7 +20,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class LoresRemastered extends JavaPlugin implements CommandExecutor {
-    private static enum Action { NAME, OWNER, ADD, DELETE, SET, INSERT, CLEAR, UNDO }
+    private static enum Action { NAME, OWNER, ADD, DELETE, SET, INSERT, CLEAR, UNDO, VER }
     private static final HashMap<String, LinkedList<ItemStack>> undo = new HashMap<String, LinkedList<ItemStack>>();
     char[] colorCodes = {
             '0', '1', '2', '3', '4',
@@ -31,6 +31,9 @@ public final class LoresRemastered extends JavaPlugin implements CommandExecutor
 
     @Override
     public void onEnable () {
+        // Config
+        getConfig().options().copyDefaults();
+        saveDefaultConfig();
         //Register the lore command
         getCommand("lore").setExecutor(this);
     }
@@ -142,6 +145,16 @@ public final class LoresRemastered extends JavaPlugin implements CommandExecutor
                 }
 
                 lore.add(concatArgs(sender, args, 1));
+                break;
+
+            case VER: //shows version of lore plugin
+                if (!sender.hasPermission("lores.version") ) {
+                    sendHelp(sender);
+                    return true;
+                }
+                LoresRemastered PLUGIN = LoresRemastered.getPlugin(LoresRemastered.class);
+                String ver = Bukkit.getServer().getPluginManager().getPlugin("LoresRemastered").getDescription().getVersion();
+                sender.sendMessage(format(PLUGIN.getConfig().getString("Messages.Ver").replace("{VER}",ver)));
                 break;
 
             case DELETE: //Delete a line of the lore
@@ -320,30 +333,32 @@ public final class LoresRemastered extends JavaPlugin implements CommandExecutor
      *
      */
     private static void sendHelp(CommandSender sender) {
-        sender.sendMessage("§e     Lores Help Page:");
-        sender.sendMessage("§4Each command will modify the Item in your hand");
+        LoresRemastered PLUGIN = LoresRemastered.getPlugin(LoresRemastered.class);
+        sender.sendMessage(format(PLUGIN.getConfig().getString("Messages.Header.1")));
+        sender.sendMessage(format(PLUGIN.getConfig().getString("Messages.Header.2")));
         if (sender.hasPermission("lores.color") || sender.hasPermission("lores.format")) {
-            sender.sendMessage("§4Use §c& §4to add color with any command");
+            sender.sendMessage(format(PLUGIN.getConfig().getString("Messages.Header.3")));
         }
         if (sender.hasPermission("lores.name")) {
-            sender.sendMessage(format("&4/lore name <custom name> &7Set the new Name of the Item"));
+            sender.sendMessage(format(PLUGIN.getConfig().getString("Messages.Rename")));
         }
         if (sender.hasPermission("lores.owner")) {
-            sender.sendMessage(format("&4/lore owner <player> &7Change the Owner of a Skull"));
+            sender.sendMessage(format(PLUGIN.getConfig().getString("Messages.Owner")));
+            sender.sendMessage(format(PLUGIN.getConfig().getString("Messages.Version")));
         }
         if (sender.hasPermission("lores.lore")) {
-            sender.sendMessage(format("&4/lore add <line of text> &7Add a line to the lore"));
-            sender.sendMessage(format("&4/lore set <line #> <line of text> §7Change a line of the lore"));
-            sender.sendMessage(format("&4/lore insert <line #> <line of text> §7Insert a line into the lore"));
-            sender.sendMessage(format("&4/lore delete [line #] §7Delete a line of the lore (last line by default)"));
-            sender.sendMessage(format("&4/lore clear §7Clear all lines of the lore"));
+            sender.sendMessage(format(PLUGIN.getConfig().getString("Messages.Add")));
+            sender.sendMessage(format(PLUGIN.getConfig().getString("Messages.Set")));
+            sender.sendMessage(format(PLUGIN.getConfig().getString("Messages.Insert")));
+            sender.sendMessage(format(PLUGIN.getConfig().getString("Messages.Delete")));
+            sender.sendMessage(format(PLUGIN.getConfig().getString("Messages.Clear")));
         }
-        sender.sendMessage(ChatColor.translateAlternateColorCodes('&',"&4/lore undo §7Undoes your last modification (up to 5 times) §cX"));
+        sender.sendMessage(ChatColor.translateAlternateColorCodes('&',""));
     }
     private static final Pattern pattern = Pattern.compile("&#[a-fA-F0-9]{6}");
 
     private static String format(String msg) {
-        if (Bukkit.getVersion().contains("1.16")) {
+        if (Bukkit.getVersion().contains("1.17") || Bukkit.getVersion().contains("1.16") || Bukkit.getVersion().contains("1.18")) {
             Matcher match = pattern.matcher(msg);
             while (match.find()) {
                 String color = msg.substring(match.start(), match.end());

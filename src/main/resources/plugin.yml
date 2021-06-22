@@ -3,7 +3,7 @@ version: ${project.version}
 main: dev.steve.jr.loresremastered.LoresRemastered
 api-version: 1.16
 prefix: Lores
-authors: [ Codfishimus, SteveJr ]
+authors: [ Codfishimus, SteveJr, BUTTERFIELD8 ]
 description: Remastered version of Codfishimus's lore plugin.
 website: https://discord.gg/Xpn5U6yU4Y
 commands:
